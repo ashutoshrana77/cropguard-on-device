@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CropGuard On-Device: Real-time crop disease detection + offline advisory for farmers on Snapdragon HP AI PCs. Privacy-first AI powered by Hexagon NPU." />
+  <title>CropGuard On-Device | Snapdragon AI for Farmers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+</head>
+<body>
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner hidden">
+    <span>🔒 Offline Mode Active — All AI inference running locally on device. No data leaves your PC.</span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo">
+        <span class="logo-icon">🌿</span>
+        <span class="logo-text">CropGuard</span>
+        <span class="logo-badge">On-Device</span>
+      </div>
+      <div class="nav-links">
+        <a href="#demo">Live Demo</a>
+        <a href="#features">Features</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#impact">Impact</a>
+        <button id="offline-toggle" class="btn-outline btn-sm">Toggle Offline</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Snapdragon® AI Lab Build & Present Challenge</div>
+      <h1>CropGuard On-Device</h1>
+      <p class="hero-subtitle">
+        Real-time crop disease detection + offline advisory for farmers.<br />
+        Fully optimized for <strong>Snapdragon X Elite / Plus</strong> Hexagon NPU (45 TOPS) on HP AI PCs.
+      </p>
+      <div class="hero-cta">
+        <a href="#demo" class="btn-primary">Try Live Demo</a>
+        <a href="#architecture" class="btn-secondary">View Tech Stack</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value">45 TOPS</span>
+          <span class="stat-label">Hexagon NPU</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">&lt;100ms</span>
+          <span class="stat-label">Inference</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">100%</span>
+          <span class="stat-label">Offline</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">HI + EN</span>
+          <span class="stat-label">Languages</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="device-mockup">
+        <div class="device-screen">
+          <div class="mock-ui">
+            <div class="mock-header">CropGuard • Local NPU</div>
+            <div class="mock-leaf">🍃</div>
+            <div class="mock-result">Tomato Late Blight • 94%</div>
+            <div class="mock-advisory">उपचार: कॉपर-आधारित फफूंदनाशक...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Demo Section -->
+  <section id="demo" class="section demo-section">
+    <div class="container">
+      <h2 class="section-title">Interactive Demo</h2>
+      <p class="section-desc">Upload a leaf image or try a sample. Detection & advisory run client-side (simulated NPU path for web demo).</p>
+
+      <div class="demo-grid">
+        <!-- Upload Panel -->
+        <div class="demo-panel">
+          <h3>1. Capture / Upload Image</h3>
+          <div id="drop-zone" class="drop-zone">
+            <input type="file" id="image-input" accept="image/*" hidden />
+            <div class="drop-content">
+              <span class="drop-icon">📷</span>
+              <p>Drop leaf image or click to upload</p>
+              <span class="drop-hint">JPG, PNG • Works offline</span>
+            </div>
+          </div>
+          <div class="sample-images">
+            <p>Or try sample:</p>
+            <button class="sample-btn" data-disease="tomato_late_blight">Tomato Late Blight</button>
+            <button class="sample-btn" data-disease="potato_early_blight">Potato Early Blight</button>
+            <button class="sample-btn" data-disease="apple_scab">Apple Scab</button>
+            <button class="sample-btn" data-disease="healthy">Healthy Leaf</button>
+          </div>
+          <div id="preview-wrap" class="preview-wrap hidden">
+            <img id="preview-img" alt="Leaf preview" />
+            <canvas id="heatmap-canvas" class="heatmap-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="demo-panel results-panel">
+          <h3>2. On-Device Detection (NPU)</h3>
+          <div id="detection-status" class="status-idle">
+            Waiting for image…
+          </div>
+          <div id="results" class="results hidden">
+            <div class="confidence-list" id="confidence-list"></div>
+            <div class="heatmap-legend">
+              <span>🔴 High activation</span>
+              <span>🟡 Medium</span>
+              <span>🟢 Low / Healthy</span>
+            </div>
+          </div>
+
+          <h3 style="margin-top: 1.5rem;">3. Local-Language Advisory (LLM)</h3>
+          <div class="lang-toggle">
+            <button class="lang-btn active" data-lang="en">English</button>
+            <button class="lang-btn" data-lang="hi">हिन्दी</button>
+          </div>
+          <div id="advisory" class="advisory hidden">
+            <div class="advisory-section">
+              <h4>Explanation</h4>
+              <p id="adv-explanation"></p>
+            </div>
+            <div class="advisory-section">
+              <h4>Treatment Steps</h4>
+              <ol id="adv-treatment"></ol>
+            </div>
+            <div class="advisory-section">
+              <h4>Prevention Tips</h4>
+              <ul id="adv-prevention"></ul>
+            </div>
+            <button id="download-pdf" class="btn-outline btn-sm">📄 Download Advisory PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="section features-section">
+    <div class="container">
+      <h2 class="section-title">Core Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🧠</div>
+          <h3>On-Device Disease Detection</h3>
+          <p>Quantized MobileNetV3 / EfficientNet-Lite on Hexagon NPU. Top-3 predictions + Grad-CAM style heatmap in &lt;100 ms.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🗣️</div>
+          <h3>Local-Language Advisory</h3>
+          <p>1–3B quantized LLM (Phi-3 / Granite class) generates plain-language explanation, organic + chemical treatment, and prevention tips in Hindi & English.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📴</div>
+          <h3>Offline-First</h3>
+          <p>Zero cloud dependency after install. Ideal for rural India where connectivity is unreliable. Full privacy — images never leave the device.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Snapdragon Optimized</h3>
+          <p>Designed for HP OmniBook X / OmniBook 5 with 45-TOPS NPU. Battery-efficient, silent, all-day field use.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎤</div>
+          <h3>Voice Interface (Stretch)</h3>
+          <p>On-device Whisper-small ASR + TTS for hands-free operation in the field.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3>Personal RAG (Stretch)</h3>
+          <p>Embed local agri-extension PDFs; semantic search over them using on-device embeddings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section id="architecture" class="section arch-section">
+    <div class="container">
+      <h2 class="section-title">Technical Architecture</h2>
+      <p class="section-desc">Built for Qualcomm AI Hub / SNPE runtimes targeting Hexagon NPU.</p>
+      <div class="arch-flow">
+        <div class="arch-step">
+          <div class="arch-num">1</div>
+          <h4>Image Capture</h4>
+          <p>Webcam / phone transfer → preprocess (resize, normalize)</p>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+          <div class="arch-num">2</div>
+          <h4>NPU Inference</h4>
+          <p>INT8/INT4 quantized CNN on Hexagon → labels + heatmap</p>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+          <div class="arch-num">3</div>
+          <h4>LLM Advisory</h4>
+          <p>Structured prompt → 4-bit LLM on NPU/CPU → treatment plan</p>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">
+          <div class="arch-num">4</div>
+          <h4>UI + PDF</h4>
+          <p>Diagnosis, explanation, steps, downloadable advisory</p>
+        </div>
+      </div>
+      <div class="tech-stack">
+        <span class="tech-tag">Qualcomm AI Hub</span>
+        <span class="tech-tag">SNPE / Hexagon NPU</span>
+        <span class="tech-tag">MobileNetV3 / EfficientNet-Lite</span>
+        <span class="tech-tag">Phi-3 / Granite 1-3B</span>
+        <span class="tech-tag">WinUI / PWA</span>
+        <span class="tech-tag">PlantVillage Dataset</span>
+        <span class="tech-tag">INT8 / INT4 Quantization</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact -->
+  <section id="impact" class="section impact-section">
+    <div class="container">
+      <h2 class="section-title">Why This Wins</h2>
+      <div class="impact-grid">
+        <div class="impact-card">
+          <h3>Real Problem</h3>
+          <p>Millions of smallholder farmers lose yield to late disease detection. Internet is unreliable in rural areas.</p>
+        </div>
+        <div class="impact-card">
+          <h3>Hardware-Aligned</h3>
+          <p>Explicitly engineered for Snapdragon X Elite/Plus NPU and HP Copilot+ PC experience — matches challenge rules.</p>
+        </div>
+        <div class="impact-card">
+          <h3>Demo-Friendly</h3>
+          <p>Live capture → instant diagnosis → Hindi/English advisory → airplane mode proof. 3–5 min judge script ready.</p>
+        </div>
+        <div class="impact-card">
+          <h3>Social Impact</h3>
+          <p>Privacy-first, offline, local language. Extensible to multi-crop, severity scoring, and voice.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p><strong>CropGuard On-Device</strong> — Built for Snapdragon® AI Lab Build & Present Challenge</p>
+      <p>Optimized for HP OmniBook X / OmniBook 5 • Snapdragon X Elite/Plus • 45 TOPS Hexagon NPU</p>
+      <p class="footer-links">
+        <a href="https://github.com/ashutoshrana77/cropguard-on-device" target="_blank">GitHub</a>
+        <span>•</span>
+        <a href="#demo">Demo</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
